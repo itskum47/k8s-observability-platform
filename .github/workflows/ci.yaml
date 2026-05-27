@@ -39,7 +39,7 @@ jobs:
             -t ghcr.io/your-org/k8s-observability-${{ matrix.service }}:${{ github.sha }} \
             ./apps/${{ matrix.service }}
       - name: Trivy image scan
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
           image-ref: ghcr.io/your-org/k8s-observability-${{ matrix.service }}:${{ github.sha }}
           format: table
