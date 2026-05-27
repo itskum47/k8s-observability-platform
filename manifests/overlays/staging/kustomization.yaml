@@ -6,7 +6,6 @@ namespace: observability-staging
 resources:
   - namespace.yaml
   - ../../base
-  - ../../../ingress/platform-ingress.yaml
 
 patches:
   - path: patch-configmap.yaml

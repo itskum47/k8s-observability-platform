@@ -1,5 +1,9 @@
 extends: default
 
+ignore: |
+  helm/*/templates/*.yaml
+  helm/*/templates/*.tpl
+
 rules:
   line-length:
     max: 180
