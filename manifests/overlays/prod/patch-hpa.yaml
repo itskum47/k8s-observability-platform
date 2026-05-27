@@ -2,6 +2,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: backend
+  namespace: observability-platform
 spec:
   minReplicas: 4
   maxReplicas: 20
@@ -10,6 +11,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: frontend
+  namespace: observability-platform
 spec:
   minReplicas: 3
   maxReplicas: 12

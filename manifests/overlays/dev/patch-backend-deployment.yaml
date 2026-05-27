@@ -2,5 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
+  namespace: observability-platform
 spec:
   replicas: 2
