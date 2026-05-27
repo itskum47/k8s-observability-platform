@@ -1,0 +1,55 @@
+namespace: observability-platform
+
+global:
+  imagePullPolicy: IfNotPresent
+
+backend:
+  replicaCount: 3
+  image:
+    repository: ghcr.io/your-org/k8s-observability-backend
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  hpa:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 12
+    cpuUtilization: 65
+    memoryUtilization: 75
+
+frontend:
+  replicaCount: 2
+  image:
+    repository: ghcr.io/your-org/k8s-observability-frontend
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    cpuUtilization: 65
+
+config:
+  APP_ENV: dev
+  APP_VERSION: 1.0.0
+  LOG_LEVEL: INFO
+
+secrets:
+  DB_USERNAME: platform_app
+  DB_PASSWORD: change-me-before-production
+
+ingress:
+  enabled: true
+  className: nginx
+  host: dev.platform.internal.example.com

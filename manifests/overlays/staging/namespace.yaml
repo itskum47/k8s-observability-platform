@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability-staging
+  labels:
+    app.kubernetes.io/name: k8s-observability-platform
+    app.kubernetes.io/environment: staging

@@ -1,0 +1,9 @@
+flowchart LR
+    Start["GitHub Event"] --> Lint["YAML Validation"]
+    Lint --> Build["Docker Build"]
+    Build --> Scan["Trivy Scan"]
+    Scan --> Manifest["Manifest Validation"]
+    Manifest --> Kind["Kind Integration Deploy"]
+    Kind --> Smoke["Smoke Tests"]
+    Smoke --> Rollback["Rollback Validation"]
+    Rollback --> End["Release Ready"]

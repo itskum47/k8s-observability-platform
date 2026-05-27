@@ -1,0 +1,58 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: platform-alert-rules
+  namespace: monitoring
+  labels:
+    monitoring: platform
+spec:
+  groups:
+    - name: platform-workload-health
+      rules:
+        - alert: PlatformPodCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total{namespace=~"observability-.*"}[10m]) > 3
+          for: 5m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: Pod restart storm detected
+            description: Pod {{ $labels.pod }} in {{ $labels.namespace }} restarted more than 3 times in 10 minutes.
+        - alert: PlatformDeploymentUnavailable
+          expr: kube_deployment_status_replicas_unavailable{namespace=~"observability-.*"} > 0
+          for: 10m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: Deployment has unavailable replicas
+            description: Deployment {{ $labels.deployment }} in {{ $labels.namespace }} is not fully available.
+    - name: platform-capacity
+      rules:
+        - alert: BackendHighCPUUsage
+          expr: sum(rate(container_cpu_usage_seconds_total{namespace=~"observability-.*",pod=~"backend-.*",container="backend"}[5m])) by (namespace) > 1.5
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: Backend CPU usage high
+            description: Backend aggregate CPU usage exceeded 1.5 cores in namespace {{ $labels.namespace }}.
+        - alert: BackendHighMemoryUsage
+          expr: sum(container_memory_working_set_bytes{namespace=~"observability-.*",pod=~"backend-.*",container="backend"}) by (namespace) > 1200000000
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: Backend memory usage high
+            description: Backend memory usage exceeded 1.2Gi in namespace {{ $labels.namespace }}.
+        - alert: HPAAtMaxReplicas
+          expr: kube_horizontalpodautoscaler_status_current_replicas{namespace=~"observability-.*"} >= kube_horizontalpodautoscaler_spec_max_replicas{namespace=~"observability-.*"}
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: HPA reached max replicas
+            description: HPA {{ $labels.horizontalpodautoscaler }} in {{ $labels.namespace }} is at max replica count.

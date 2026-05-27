@@ -1,0 +1,20 @@
+flowchart TB
+    subgraph Workloads["Application Namespaces"]
+      Backend["Backend Pods (/metrics)"]
+      Frontend["Frontend Pods (/healthz)"]
+    end
+
+    Backend --> SM["ServiceMonitor"]
+    Frontend --> SM
+
+    subgraph Monitoring["Namespace: monitoring"]
+      Prom["Prometheus"]
+      Rules["PrometheusRule Alerts"]
+      AM["Alertmanager"]
+      Graf["Grafana Dashboards"]
+    end
+
+    SM --> Prom
+    Rules --> Prom
+    Prom --> AM
+    Prom --> Graf

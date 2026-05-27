@@ -1,0 +1,13 @@
+flowchart TD
+    Dev["Engineer Commit"] --> PR["Pull Request"]
+    PR --> CI["CI Validation"]
+    CI --> Merge["Merge to main"]
+    Merge --> Release["Manual Deploy Workflow"]
+    Release --> BuildPush["Build + Push Images"]
+    BuildPush --> Kustomize["Update Kustomize Overlay"]
+    Kustomize --> Apply["kubectl apply -k overlay"]
+    Apply --> Rollout["Rollout Status Check"]
+    Rollout --> Smoke["Smoke Tests"]
+    Smoke --> Success["Environment Healthy"]
+    Smoke -->|Fail| Rollback["Rollback Deployment"]
+    Rollback --> Verify["Post-rollback Verification"]

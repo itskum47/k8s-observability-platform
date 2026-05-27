@@ -1,0 +1,22 @@
+flowchart LR
+    User["End User"] --> Ingress["NGINX Ingress"]
+    Ingress --> FrontendSvc["Service: frontend"]
+    Ingress --> BackendSvc["Service: backend"]
+
+    subgraph Dev["Namespace: observability-dev"]
+      FrontendSvc --> FrontendPods["Frontend Pods (Deployment + HPA)"]
+      BackendSvc --> BackendPods["Backend Pods (Deployment + HPA)"]
+      FrontendPods --> BackendPods
+      Config["ConfigMap"] --> BackendPods
+      Secret["Secret"] --> BackendPods
+    end
+
+    subgraph Platform["Cluster Platform Controls"]
+      NP["NetworkPolicy"]
+      PDB["PodDisruptionBudget"]
+    end
+
+    NP --> FrontendPods
+    NP --> BackendPods
+    PDB --> FrontendPods
+    PDB --> BackendPods

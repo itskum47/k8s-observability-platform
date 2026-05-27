@@ -1,0 +1,82 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      image_tag:
+        description: "Container image tag"
+        required: true
+        default: "latest"
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  deployment:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        run: |
+          docker build -t ghcr.io/your-org/k8s-observability-backend:${{ inputs.image_tag }} ./apps/backend
+          docker push ghcr.io/your-org/k8s-observability-backend:${{ inputs.image_tag }}
+
+      - name: Build and push frontend image
+        run: |
+          docker build -t ghcr.io/your-org/k8s-observability-frontend:${{ inputs.image_tag }} ./apps/frontend
+          docker push ghcr.io/your-org/k8s-observability-frontend:${{ inputs.image_tag }}
+
+      - name: Configure kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Install Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Write kubeconfig
+        env:
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+        run: |
+          mkdir -p ~/.kube
+          echo "$KUBECONFIG_B64" | base64 -d > ~/.kube/config
+
+      - name: Update image tags in overlay
+        run: |
+          kustomize edit set image \
+            ghcr.io/your-org/k8s-observability-backend=ghcr.io/your-org/k8s-observability-backend:${{ inputs.image_tag }} \
+            ghcr.io/your-org/k8s-observability-frontend=ghcr.io/your-org/k8s-observability-frontend:${{ inputs.image_tag }}
+        working-directory: manifests/overlays/${{ inputs.environment }}
+
+      - name: Deploy platform
+        run: ./scripts/deploy.sh ${{ inputs.environment }}
+
+      - name: Smoke test deployment
+        run: ./scripts/smoke-test.sh ${{ inputs.environment }}
+
+      - name: Validate rollback command path
+        run: |
+          kubectl rollout history deployment/backend -n observability-${{ inputs.environment }}
+          kubectl rollout undo deployment/backend -n observability-${{ inputs.environment }} --dry-run=server

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>k8s Observability Platform</title>
+    <style>
+      :root { font-family: Inter, Arial, sans-serif; color-scheme: light dark; }
+      body { margin: 0; padding: 2rem; background: #0b1220; color: #e6edf7; }
+      .card { max-width: 760px; margin: 0 auto; padding: 1.5rem; border: 1px solid #26334d; border-radius: 12px; background: #111a2b; }
+      h1 { margin: 0 0 1rem; }
+      code { background: #1f2b45; padding: 0.2rem 0.4rem; border-radius: 6px; }
+      pre { padding: 1rem; border-radius: 8px; background: #0d1526; overflow-x: auto; }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>Kubernetes Observability Platform</h1>
+      <p>Frontend service is healthy. This view validates ingress, service routing, and backend connectivity.</p>
+      <p>Backend endpoint: <code>/api/v1/info</code></p>
+      <pre id="output">Loading backend response...</pre>
+    </main>
+    <script>
+      async function loadInfo() {
+        const output = document.getElementById("output");
+        try {
+          const response = await fetch("/api/v1/info");
+          const payload = await response.json();
+          output.textContent = JSON.stringify(payload, null, 2);
+        } catch (error) {
+          output.textContent = `Backend unavailable: ${error.message}`;
+        }
+      }
+      loadInfo();
+      setInterval(loadInfo, 15000);
+    </script>
+  </body>
+</html>
